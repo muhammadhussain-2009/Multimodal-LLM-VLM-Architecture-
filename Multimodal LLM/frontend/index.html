@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socratica: Multimodal AI STEM Diagram Feedback System</title>
+    <!-- Modern Premium Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Dashboard Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-graduation-cap logo-icon"></i>
+                <span class="logo-text">Socratica</span>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-btn active" id="btn-tab-student" onclick="switchTab('student')">
+                    <i class="fa-solid fa-user-graduate"></i>
+                    <span>Student Workspace</span>
+                </button>
+                <button class="nav-btn" id="btn-tab-teacher" onclick="switchTab('teacher')">
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                    <span>Teacher Analytics</span>
+                </button>
+                <button class="nav-btn" id="btn-tab-stats" onclick="switchTab('stats')">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Statistical Lab</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-badge">
+                    <div class="avatar"><i class="fa-solid fa-school"></i></div>
+                    <div class="user-info">
+                        <span class="user-name">District Edge Server</span>
+                        <span class="user-role">Online (Ollama 8B)</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header bar -->
+            <header class="app-header">
+                <div class="header-title">
+                    <h1 id="header-main-text">Student Diagram Workspace</h1>
+                    <p id="header-sub-text">Upload a hand-drawn STEM diagram to receive real-time, guided Socratic feedback.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn outline" onclick="toggleAccessibilityMode()">
+                        <i class="fa-solid fa-volume-high" id="audio-icon"></i>
+                        <span>Audio Narrator</span>
+                    </button>
+                    <div class="connection-status">
+                        <span class="status-indicator online"></span>
+                        <span>Local Inference</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ================= STUDENT WORKSPACE TAB ================= -->
+            <section id="tab-student" class="tab-content active">
+                <div class="workspace-grid">
+                    <!-- Left: Upload & Canvas Overlay -->
+                    <div class="card canvas-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-compass-drafting text-primary"></i> Drawing Submission</h3>
+                            <div class="domain-selector">
+                                <label for="domain-select">Domain:</label>
+                                <select id="domain-select" onchange="onDomainChange()">
+                                    <option value="physics">Physics (Inclined Plane)</option>
+                                    <option value="biology">Biology (Plant Cell)</option>
+                                    <option value="chemistry">Chemistry (Water Lewis Dot)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="canvas-container" id="canvas-container">
+                            <div class="drop-zone" id="drop-zone">
+                                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                                <p class="primary-text">Drag student diagram here or click to browse</p>
+                                <p class="secondary-text">Supports JPG, PNG, WEBP</p>
+                                <input type="file" id="file-input" style="display: none;" accept="image/*">
+                            </div>
+                            <!-- Live Interactive Canvas Overlay -->
+                            <div class="image-wrapper" id="image-wrapper" style="display: none;">
+                                <img id="uploaded-img" src="" alt="Student diagram submission">
+                                <canvas id="overlay-canvas"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="demo-quick-uploads">
+                            <span class="demo-label">Demo Presets:</span>
+                            <button class="demo-pill" onclick="loadDemoPreset('physics')">Load Physics Diagram</button>
+                            <button class="demo-pill" onclick="loadDemoPreset('biology')">Load Biology Diagram</button>
+                            <button class="demo-pill" onclick="loadDemoPreset('chemistry')">Load Chemistry Diagram</button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Settings, Scene Graph & AI Feedback -->
+                    <div class="workspace-sidebar">
+                        <!-- Pipeline Settings Box -->
+                        <div class="card collapsed" id="settings-card">
+                            <div class="card-header collapsible" onclick="toggleCard('settings-card')">
+                                <h3><i class="fa-solid fa-gears text-primary"></i> Inference Settings</h3>
+                                <i class="fa-solid fa-chevron-down toggle-arrow"></i>
+                            </div>
+                            <div class="card-body">
+                                <div class="control-group" style="margin-bottom: 12px;">
+                                    <label for="vlm-provider-select" style="font-size: 13px; font-weight: 500;">VLM Engine:</label>
+                                    <select id="vlm-provider-select" onchange="toggleApiInputs()" style="width: 100%; background-color: #0f172a; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 12px; margin-top: 4px; outline: none; cursor: pointer;">
+                                        <option value="mock">Mock (Demo Mode)</option>
+                                        <option value="ollama">Ollama (Local VLM)</option>
+                                        <option value="nvidia">Nvidia NIM (Cloud VLM)</option>
+                                    </select>
+                                </div>
+                                <div class="control-group" style="margin-bottom: 12px;">
+                                    <label for="llm-provider-select" style="font-size: 13px; font-weight: 500;">LLM Engine:</label>
+                                    <select id="llm-provider-select" onchange="toggleApiInputs()" style="width: 100%; background-color: #0f172a; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 12px; margin-top: 4px; outline: none; cursor: pointer;">
+                                        <option value="mock">Mock (Demo Mode)</option>
+                                        <option value="ollama">Ollama (Local LLM)</option>
+                                        <option value="nvidia">Nvidia NIM (Cloud LLM)</option>
+                                    </select>
+                                </div>
+                                <div id="nvidia-key-container" class="control-group" style="display: none; margin-bottom: 12px;">
+                                    <label for="nvidia-api-key" style="font-size: 13px; font-weight: 500;">NVIDIA API Key:</label>
+                                    <input type="password" id="nvidia-api-key" placeholder="Enter nvapi-..." style="width: 100%; background-color: #0f172a; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 12px; margin-top: 4px; outline: none;">
+                                </div>
+                                <div id="ollama-url-container" class="control-group" style="display: none; margin-bottom: 12px;">
+                                    <label for="ollama-base-url" style="font-size: 13px; font-weight: 500;">Ollama Base URL:</label>
+                                    <input type="text" id="ollama-base-url" value="http://localhost:11434" style="width: 100%; background-color: #0f172a; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 12px; margin-top: 4px; outline: none;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scene Graph Box -->
+                        <div class="card collapsed" id="scenegraph-card">
+                            <div class="card-header collapsible" onclick="toggleCard('scenegraph-card')">
+                                <h3><i class="fa-solid fa-network-wired text-purple"></i> VLM Scene Graph</h3>
+                                <i class="fa-solid fa-chevron-down toggle-arrow"></i>
+                            </div>
+                            <div class="card-body">
+                                <div id="scenegraph-placeholder" class="placeholder-content">
+                                    Analyze a diagram to see the extracted visual relationships.
+                                </div>
+                                <pre id="scenegraph-json" class="json-code" style="display: none;"></pre>
+                            </div>
+                        </div>
+
+                        <!-- Feedback Panel -->
+                        <div class="card" id="feedback-card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-comment-dots text-emerald"></i> Socratic Feedback</h3>
+                            </div>
+                            <div class="card-body feedback-body">
+                                <div id="feedback-placeholder" class="placeholder-content">
+                                    Upload or load a preset diagram, then select "Submit and Analyze" below.
+                                </div>
+                                <div id="feedback-content" style="display: none;">
+                                    <div class="misconceptions-log">
+                                        <h4>Detected Conceptual Gaps</h4>
+                                        <div id="misconception-list"></div>
+                                    </div>
+
+                                    <div class="chat-thread">
+                                        <div class="chat-message bot">
+                                            <div class="avatar-sm"><i class="fa-solid fa-robot"></i></div>
+                                            <div class="message-bubble" id="socratic-prompt-bubble"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-primary btn-full" id="btn-submit-diagram" onclick="submitDiagram()">
+                                    <i class="fa-solid fa-microchip"></i> Run Multimodal Pipeline
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TEACHER ANALYTICS TAB ================= -->
+            <section id="tab-teacher" class="tab-content">
+                <div class="teacher-grid">
+                    <!-- Top stats cards -->
+                    <div class="metrics-row">
+                        <div class="metric-card card">
+                            <span class="metric-label">Assessment Class Size</span>
+                            <span class="metric-value" id="metrics-class-size">28</span>
+                            <span class="metric-trend text-green"><i class="fa-solid fa-circle-check"></i> Standard Cohort</span>
+                        </div>
+                        <div class="metric-card card">
+                            <span class="metric-label">Class Normalized Gain (g)</span>
+                            <span class="metric-value" id="metrics-learning-gain">0.485</span>
+                            <span class="metric-trend text-green"><i class="fa-solid fa-arrow-trend-up"></i> +14% vs Static Feedback</span>
+                        </div>
+                        <div class="metric-card card">
+                            <span class="metric-label">Active Misconceptions</span>
+                            <span class="metric-value text-red" id="metrics-active-errors">2</span>
+                            <span class="metric-trend text-red" id="metrics-attention-note"><i class="fa-solid fa-triangle-exclamation"></i> Action Needed</span>
+                        </div>
+                    </div>
+
+                    <div class="analytics-row">
+                        <!-- Heatmap Chart -->
+                        <div class="card chart-card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-fire text-red"></i> Misconception Distribution Heatmap</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="chart-desc">Tracks which learning errors are most prevalent across the class.</p>
+                                <div class="bar-chart-container" id="bar-chart">
+                                    <!-- Bar rows generated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Longitudinal Track -->
+                        <div class="card timeline-card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-clock-rotate-left text-blue"></i> Longitudinal Student Progress</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="chart-desc">Monitors single-student error correction path across four consecutive tasks.</p>
+                                <div class="longitudinal-timeline" id="longitudinal-timeline">
+                                    <!-- Timeline points generated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Taxonomy Explorer -->
+                    <div class="card taxonomy-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-database text-purple"></i> AAAS Project 2061 & MaLT Taxonomy Reference</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="taxonomy-explorer" id="taxonomy-explorer">
+                                <!-- Collapsible taxonomy list generated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= STATISTICAL LAB TAB ================= -->
+            <section id="tab-stats" class="tab-content">
+                <div class="stats-grid">
+                    <!-- Left: Control sliders -->
+                    <div class="card stats-control-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-sliders text-primary"></i> Pre-Registered Parameters</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="control-group">
+                                <div class="control-labels">
+                                    <label for="slider-power">Statistical Power (1 - β)</label>
+                                    <span class="val-display" id="val-power">80%</span>
+                                </div>
+                                <input type="range" id="slider-power" min="0.70" max="0.95" step="0.05" value="0.80" oninput="updateStatsParams()">
+                            </div>
+
+                            <div class="control-group">
+                                <div class="control-labels">
+                                    <label for="slider-alpha">Significance Level (α)</label>
+                                    <span class="val-display" id="val-alpha">0.05</span>
+                                </div>
+                                <input type="range" id="slider-alpha" min="0.01" max="0.10" step="0.01" value="0.05" oninput="updateStatsParams()">
+                            </div>
+
+                            <div class="control-group">
+                                <div class="control-labels">
+                                    <label for="slider-effect">Min Detectable Effect Size (d)</label>
+                                    <span class="val-display" id="val-effect">0.30</span>
+                                </div>
+                                <input type="range" id="slider-effect" min="0.15" max="0.60" step="0.05" value="0.30" oninput="updateStatsParams()">
+                            </div>
+
+                            <button class="btn btn-secondary btn-full margin-top" onclick="triggerStatisticalRun()">
+                                <i class="fa-solid fa-calculator"></i> Run Significance Calculations
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Results Card -->
+                    <div class="card stats-results-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-clipboard-check text-green"></i> Hypothesis Test Analysis</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-results-flex">
+                                <div class="cohort-summary-box">
+                                    <h4>Calculated Minimum Sample Size</h4>
+                                    <div class="n-value" id="stats-n-value">175</div>
+                                    <p class="n-subtext">Students needed per group (Control / Treatment)</p>
+                                </div>
+                                <div class="cohort-summary-box">
+                                    <h4>Significance Outcome</h4>
+                                    <div class="p-value" id="stats-p-value">p = 0.0031</div>
+                                    <p class="p-subtext text-green" id="stats-verdict-text">Significant (p < 0.05)</p>
+                                </div>
+                            </div>
+
+                            <div class="stats-details-table">
+                                <div class="table-header-row">
+                                    <span>Metric</span>
+                                    <span>Control (Static)</span>
+                                    <span>Treatment (Socratic)</span>
+                                </div>
+                                <div class="table-row">
+                                    <span>Sample Mean (Normalized Gain)</span>
+                                    <span id="stat-mean-control">0.380</span>
+                                    <span id="stat-mean-treatment">0.490</span>
+                                </div>
+                                <div class="table-row">
+                                    <span>Cohen's d Effect Size</span>
+                                    <span colspan="2" class="text-bold" id="stat-effect-size">0.312</span>
+                                </div>
+                                <div class="table-row">
+                                    <span>Welch's t-statistic</span>
+                                    <span colspan="2" id="stat-t-value">2.915</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Script loading -->
+    <script src="app.js?v=1.0.2"></script>
+</body>
+</html>
