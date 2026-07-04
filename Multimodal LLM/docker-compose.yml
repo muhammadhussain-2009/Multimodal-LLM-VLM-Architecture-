@@ -1,0 +1,71 @@
+# =============================================================
+# Socratica — Docker Compose
+# Services: app (FastAPI) + ollama (local VLM/LLM inference)
+# Optional: postgres (upgrade from SQLite for production)
+# =============================================================
+
+version: "3.9"
+
+services:
+
+  # ---- Ollama: local LLM/VLM inference engine ----
+  ollama:
+    image: ollama/ollama:latest
+    container_name: socratica-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    # GPU passthrough (uncomment if NVIDIA GPU is available):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ---- Socratica API ----
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: socratica-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./data:/app/data
+      - ./socratica.db:/app/socratica.db
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_VLM_MODEL=llava:13b
+      - OLLAMA_LLM_MODEL=llama3.1:8b
+      - DATABASE_URL=sqlite+aiosqlite:///./socratica.db
+      - APP_ENV=production
+      - LOG_LEVEL=INFO
+    env_file:
+      - .env
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  ollama_data:
+    driver: local

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "ai2d_sample_01",
+    "image": "images/physics_inclined_plane.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nAnalyze the physics diagram. Extract all force vectors and object nodes with their spatial locations, then identify any missing force vectors or direction errors."
+      },
+      {
+        "from": "gpt",
+        "value": "{\"elements\": [{\"id\": \"node_block\", \"type\": \"node\", \"label\": \"Block on Incline\", \"bbox\": [400, 450, 550, 600], \"confidence\": 1.0, \"grounding\": \"object\"}, {\"id\": \"vec_gravity\", \"type\": \"vector\", \"label\": \"Gravity Vector\", \"bbox\": [480, 520, 700, 520], \"confidence\": 1.0, \"grounding\": \"physics_force_vector\"}], \"relations\": [{\"source\": \"vec_gravity\", \"target\": \"node_block\", \"relation_type\": \"acts_on\", \"confidence\": 1.0}]}"
+      }
+    ]
+  },
+  {
+    "id": "figqa_sample_01",
+    "image": "images/bar_chart_1.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nEvaluate the student-drawn bar chart. Are the labels correctly placed and does the height of the bars reflect the raw data points?"
+      },
+      {
+        "from": "gpt",
+        "value": "Yes, the layout coordinates are aligned, and the height matches the data. The label 'Normal Force distribution' is correctly positioned."
+      }
+    ]
+  }
+]

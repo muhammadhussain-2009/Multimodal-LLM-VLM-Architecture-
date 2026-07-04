@@ -1,0 +1,16 @@
+[
+  {
+    "id": "figqa_sample_01",
+    "image": "images/bar_chart_1.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nEvaluate the student-drawn bar chart. Are the labels correctly placed and does the height of the bars reflect the raw data points?"
+      },
+      {
+        "from": "gpt",
+        "value": "Yes, the layout coordinates are aligned, and the height matches the data. The label 'Normal Force distribution' is correctly positioned."
+      }
+    ]
+  }
+]
